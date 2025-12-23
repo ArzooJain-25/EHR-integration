@@ -1,0 +1,47 @@
+services:
+  openemr-db:
+    image: mariadb:10.11
+    container_name: openemr-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: openemr
+      MYSQL_USER: openemr
+      MYSQL_PASSWORD: openemr
+    volumes:
+      - openemr-db-data:/var/lib/mysql
+    networks:
+      - openemr-network
+
+  openemr:
+    image: openemr/openemr:7.0.2
+    container_name: openemr
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+    environment:
+      MYSQL_HOST: openemr-db
+      MYSQL_ROOT_PASS: root
+      MYSQL_USER: openemr
+      MYSQL_PASS: openemr
+      MYSQL_DATABASE: openemr
+      OE_USER: admin
+      OE_PASS: Admin123!
+    volumes:
+      - openemr-sites:/var/www/localhost/htdocs/openemr/sites
+      - openemr-log:/var/log
+    depends_on:
+      - openemr-db
+    networks:
+      - openemr-network
+
+volumes:
+  openemr-db-data:
+  openemr-sites:
+  openemr-log:
+
+
+networks:
+  openemr-network:
+    driver: bridge
